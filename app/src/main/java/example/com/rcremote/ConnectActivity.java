@@ -20,32 +20,32 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ConnectActivity extends AppCompatActivity {
-    public static int REQUEST_BLUETOOTH =1;
-    private ListView devFound;
+    public static int REQUEST_BLUETOOTH = 1;
+    ListView devFound;
     BluetoothAdapter BTAdapter;
 
-    CustomBluetoothAdapter btBaseAdapter;
+    CustomBluetoothAdapter btArrayAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_connect);
         BTAdapter = BluetoothAdapter.getDefaultAdapter();
-        if(BTAdapter == null){
+        if (BTAdapter == null) {
             new AlertDialog.Builder(this)
-                .setTitle("Incompatible")
-                .setMessage("Your device does not support bluetooth")
-                .setPositiveButton("Exit", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        System.exit(0);
-                    }
-                })
-            .setIcon(android.R.drawable.ic_dialog_alert)
-            .show();
+                    .setTitle("Incompatible")
+                    .setMessage("Your device does not support bluetooth")
+                    .setPositiveButton("Exit", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            System.exit(0);
+                        }
+                    })
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .show();
         }
 
-        if(!BTAdapter.isEnabled()){
+        if (!BTAdapter.isEnabled()) {
             Intent enableBT = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBT, REQUEST_BLUETOOTH);
         }
@@ -54,25 +54,29 @@ public class ConnectActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                btBaseAdapter.clear();
+                btArrayAdapter.clear();
                 BTAdapter.startDiscovery();
             }
         });
 
-        devFound = (ListView)findViewById(R.id.devicesfound);
-        //btArrayAdapter = new ArrayAdapter<String>(ConnectActivity.this, android.R.layout.simple_list_item_1);
-        btBaseAdapter = new CustomBluetoothAdapter();
-        devFound.setAdapter(btBaseAdapter);
+        devFound = (ListView) findViewById(R.id.devicesfound);
+        btArrayAdapter = new CustomBluetoothAdapter();
+        devFound.setAdapter(btArrayAdapter);
 
         registerReceiver(ActionFoundReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
     }
 
     public class CustomBluetoothAdapter extends BaseAdapter {
 
-        private List<String> views = new ArrayList<>();
+        private ArrayList<BTConnection> views = new ArrayList<>();
 
-        public void add(String item) {
-            if(!views.contains(item)) {
+        public void add(BTConnection item) {
+            boolean check = true;
+            for(BTConnection here : views){
+                if(here.getAddress().equals(item.getAddress()))
+                    check = false;
+            }
+            if(check) {
                 views.add(item);
             }
         }
@@ -85,7 +89,8 @@ public class ConnectActivity extends AppCompatActivity {
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             TextView textView = new TextView(ConnectActivity.this);
-            textView.setText(views.get(position));
+            String resource = views.get(position).getName() + "\n" + views.get(position).getAddress();
+            textView.setText(resource);
             return textView;
         }
 
@@ -104,16 +109,17 @@ public class ConnectActivity extends AppCompatActivity {
         }
     }
 
-    protected final BroadcastReceiver ActionFoundReceiver = new BroadcastReceiver(){
+        protected final BroadcastReceiver ActionFoundReceiver = new BroadcastReceiver() {
 
-        @Override
-       public void onReceive(Context context, Intent intent){
-            String action = intent.getAction();
-            if(BluetoothDevice.ACTION_FOUND.equals(action)){
-                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                btBaseAdapter.add(device.getName() +"\n" + device.getAddress());
-                btBaseAdapter.notifyDataSetChanged();
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String action = intent.getAction();
+                if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+                    BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                    BTConnection connect = new BTConnection(device.getName(), device.getAddress(), false);
+                    btArrayAdapter.add(connect);
+                    btArrayAdapter.notifyDataSetChanged();
+                }
             }
-        }
-    };
-}
+        };
+    }
