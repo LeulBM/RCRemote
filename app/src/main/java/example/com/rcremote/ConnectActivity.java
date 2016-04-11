@@ -6,8 +6,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.bluetooth.*;
@@ -15,6 +17,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +33,10 @@ public class ConnectActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_connect);
+
+        System.out.println("starting service within Activity");
+        startService(new Intent(this, BluetoothService.class));
+
         BTAdapter = BluetoothAdapter.getDefaultAdapter();
         if (BTAdapter == null) {
             new AlertDialog.Builder(this)
@@ -51,11 +58,13 @@ public class ConnectActivity extends AppCompatActivity {
         }
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        assert fab != null;
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 btArrayAdapter.clear();
                 BTAdapter.startDiscovery();
+                Toast.makeText(ConnectActivity.this, "Searching", Toast.LENGTH_LONG).show();
             }
         });
 
@@ -87,10 +96,44 @@ public class ConnectActivity extends AppCompatActivity {
         }
 
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            TextView textView = new TextView(ConnectActivity.this);
+        public View getView(final int position, View convertView, ViewGroup parent) {
+            final TextView textView = new TextView(ConnectActivity.this);
             String resource = views.get(position).getName() + "\n" + views.get(position).getAddress();
             textView.setText(resource);
+            textView.setClickable(true);
+            textView.setOnClickListener(new View.OnClickListener(){
+                @Override
+                public void onClick(View v){
+                    BTAdapter.cancelDiscovery();
+                    String s = textView.getText().toString();
+                    String []lines = s.split("\\s*\\r?\\n\\s*");
+                    String mAddress = lines[1];
+                    Intent myIntent = new Intent();
+                    myIntent.setAction("Connect");
+                    myIntent.putExtra("BTAddress", mAddress);
+                    LocalBroadcastManager.getInstance(ConnectActivity.this).sendBroadcast(myIntent);
+
+                    IntentFilter respond = new IntentFilter();
+                    respond.addAction("Connection Results");
+                    LocalBroadcastManager.getInstance(ConnectActivity.this).registerReceiver(new BroadcastReceiver() {
+                        @Override
+                        public void onReceive(Context context, Intent intent) {
+                            int resultcheck = intent.getIntExtra("Result", 2);
+
+                            if (resultcheck == 0)
+                                Toast.makeText(ConnectActivity.this, "Already Connected to this", Toast.LENGTH_LONG).show();
+                            else if (resultcheck == 1) {
+                                Toast.makeText(ConnectActivity.this, "Connection Established", Toast.LENGTH_LONG).show();
+                                textView.setBackgroundColor(Color.GREEN);
+                            } else {
+                                Toast.makeText(ConnectActivity.this, "Could not Connect", Toast.LENGTH_LONG).show();
+                                textView.setBackgroundColor(Color.RED);
+                            }
+                        }
+                    }, respond);
+
+                }
+            });
             return textView;
         }
 
@@ -122,4 +165,10 @@ public class ConnectActivity extends AppCompatActivity {
                 }
             }
         };
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(ActionFoundReceiver);
     }
+}
