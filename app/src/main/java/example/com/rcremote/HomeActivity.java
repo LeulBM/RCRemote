@@ -22,6 +22,7 @@ public class HomeActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        assert fab != null;
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -31,6 +32,7 @@ public class HomeActivity extends AppCompatActivity {
         });
 
         Button one = (Button) findViewById(R.id.laugh);
+        assert one != null;
         one.setOnClickListener(new View.OnClickListener(){
             MediaPlayer mmediaPlayer = MediaPlayer.create(getApplicationContext(), R.raw.laughtrack);
             @Override
@@ -46,6 +48,21 @@ public class HomeActivity extends AppCompatActivity {
                 }
             }
         });
+
+        Button two = (Button) findViewById(R.id.controller);
+        assert two != null;
+        two.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                Intent intent = new Intent (HomeActivity.this, ControllerActivity.class);
+                HomeActivity.this.startActivity(intent);
+            }
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
     }
 
     @Override

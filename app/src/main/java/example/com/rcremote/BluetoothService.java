@@ -17,7 +17,6 @@ import java.util.UUID;
 public class BluetoothService extends Service {
     private String macAddress;
     private BluetoothSocket btSocket;
-    private boolean connected;
     private BluetoothAdapter mAdapt;
 
     private static BluetoothService starthere;
@@ -36,7 +35,7 @@ public class BluetoothService extends Service {
                 Intent results = new Intent();
                 results.setAction("Connection Results");
 
-                if (connected && macAddress.equals(intent.getStringExtra("BTAddress"))) {
+                if (macAddress != null && macAddress.equals(intent.getStringExtra("BTAddress"))) {
                     results.putExtra("Result", 0);
                 } else {
                     macAddress = intent.getStringExtra("BTAddress");
@@ -72,7 +71,9 @@ public class BluetoothService extends Service {
             @Override
             public void onReceive(Context context, Intent intent) {
                 try {
-                    btSocket.getOutputStream().write(intent.getByteArrayExtra("ToSend"));
+                    double[] toConv = intent.getDoubleArrayExtra("ToSend");
+                    String s = toConv[0]+" "+toConv[1]+"\n";
+                    btSocket.getOutputStream().write(s.getBytes());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -87,19 +88,6 @@ public class BluetoothService extends Service {
     public void onCreate(){
         starthere = this;
     }
-
-    public static BluetoothService getInstance(){
-        return starthere;
-    }
-
-    public String getMacAddress(){
-        return macAddress;
-    }
-
-    public boolean getConnected(){
-        return connected;
-    }
-
 
     @Override
     public IBinder onBind(Intent intent) {

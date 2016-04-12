@@ -20,7 +20,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class ConnectActivity extends AppCompatActivity {
     public static int REQUEST_BLUETOOTH = 1;
@@ -121,12 +120,12 @@ public class ConnectActivity extends AppCompatActivity {
                             int resultcheck = intent.getIntExtra("Result", 2);
 
                             if (resultcheck == 0)
-                                Toast.makeText(ConnectActivity.this, "Already Connected to this", Toast.LENGTH_LONG).show();
+                                Toast.makeText(ConnectActivity.this, "Already Connected to this", Toast.LENGTH_SHORT).show();
                             else if (resultcheck == 1) {
-                                Toast.makeText(ConnectActivity.this, "Connection Established", Toast.LENGTH_LONG).show();
+                                Toast.makeText(ConnectActivity.this, "Connection Established", Toast.LENGTH_SHORT).show();
                                 textView.setBackgroundColor(Color.GREEN);
                             } else {
-                                Toast.makeText(ConnectActivity.this, "Could not Connect", Toast.LENGTH_LONG).show();
+                                Toast.makeText(ConnectActivity.this, "Could not Connect", Toast.LENGTH_SHORT).show();
                                 textView.setBackgroundColor(Color.RED);
                             }
                         }
