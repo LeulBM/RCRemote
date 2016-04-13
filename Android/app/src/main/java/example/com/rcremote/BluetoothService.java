@@ -71,8 +71,19 @@ public class BluetoothService extends Service {
             @Override
             public void onReceive(Context context, Intent intent) {
                 try {
-                    double[] toConv = intent.getDoubleArrayExtra("ToSend");
-                    String s = toConv[0]+" "+toConv[1]+"\n";
+                    int [] toConv = intent.getIntArrayExtra("ToSend");
+                    String s ="";
+
+                    if(toConv[0]<10)
+                        s = s.concat("00"+toConv[0]+" ");
+                    else if(toConv[0] < 100)
+                        s = s.concat("0"+toConv[0]+" ");
+                    else
+                        s = s.concat(toConv[0]+" ");
+
+                    if(toConv[1]<10)
+                        s = s.concat(toConv[1]+"\n");
+
                     btSocket.getOutputStream().write(s.getBytes());
                 } catch (IOException e) {
                     e.printStackTrace();

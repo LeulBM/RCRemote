@@ -16,10 +16,10 @@ import android.widget.ToggleButton;
 import org.w3c.dom.Text;
 
 public class ControllerActivity extends AppCompatActivity {
-    double [] command = {0,0};
+    int [] command = {90,0};
     TextView echo;
     Intent sendIntent;
-    double loc;
+    int loc;
     VerticalSeekBar power;
 
     @Override
@@ -69,10 +69,10 @@ public class ControllerActivity extends AppCompatActivity {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 
-                echo.setText(String.valueOf(((double)power.getProgress()-10)/10));
+                //echo.setText(String.valueOf(((double)power.getProgress()-90)/90));
                 loc = progress;
-                double thrust = ((loc-10.0)/10.0);
-                command[0] = (thrust);
+                echo.setText(String.valueOf(loc));
+                command[0] = (loc);
                 LocalBroadcastManager.getInstance(ControllerActivity.this).sendBroadcast(sendIntent);
 
             }
@@ -94,9 +94,10 @@ public class ControllerActivity extends AppCompatActivity {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if(isChecked) {
-                    command[0] = command[1] = 0;
-                    power.setProgress(10);
-                    echo.setText("0");
+                    command[0] = 90;
+                    command[1] = 0;
+                    power.setProgress(90);
+                    echo.setText("90");
                     LocalBroadcastManager.getInstance(ControllerActivity.this).sendBroadcast(sendIntent);
                 }
             }
